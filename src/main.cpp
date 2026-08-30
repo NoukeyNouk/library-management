@@ -1,84 +1,15 @@
 #include <iostream>
 #include <map>
-#include <ostream>
 #include <string>
+
+#include "book.hpp"
+#include "users.hpp"
+
 
 using namespace std;
 
+
 void user_loop();
-
-struct Book {
-public:
-    string isbn;
-    string author;
-    string title;
-    string genre;
-
-    Book() = default;
-    Book(const string& _isbn, const string& _author, const string& _title, const string& _genre):
-        isbn(_isbn),
-        author(_author),
-        title(_title),
-        genre(_genre) {}
-
-};
-
-
-ostream& operator << (ostream& out, const Book& book) {
-    out << book.title;
-    return out;
-}
-
-class User {
-private:
-    inline static int id_counter = 1;
-
-    string name;
-    int id;
-    int max_books;
-    int max_days;
-
-protected:
-    User(const string& _name, int _max_books, int _max_days):
-        name(_name),
-        id(id_counter++), 
-        max_books(_max_books),
-        max_days(_max_days) {}
-
-public:
-    User() = default;
-
-    string get_id() const {
-        return to_string(id);
-    }
-
-    string get_name() const {
-        return name;
-    }
-
-};
-
-ostream& operator << (ostream& out, const User& user) {
-    out << user.get_name();
-    return out;
-}
-
-class Student: public User {
-public:
-    Student(const string& name): User(name, 3, 14) {}
-};
-
-class Faculty: public User {
-public:
-    Faculty(const string& name): User(name, 10, 30) {}
-
-};
-
-class Guest: public User {
-public:
-    Guest(const string& name): User(name, 1, 7) {}
-
-};
 
 
 class Library {
