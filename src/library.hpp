@@ -71,6 +71,18 @@ public:
         }
     }
 
+    void find_user(const string& query) {
+        int zero_flag = 1;
+        for (const auto& [id, user] : users) {
+            if (user.get_name().find(query) != string::npos) {
+                cout << id << ". " << user << "\n";
+            }
+        }
+        if (zero_flag) {
+            cout << "There's no any users with this query!\n";
+        }
+    }
+
     void show_users() const {
         if (users.empty()) {
             cout << "There's no users in library..\n";

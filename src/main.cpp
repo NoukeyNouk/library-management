@@ -12,6 +12,7 @@ void add_book_to_library(Library& lib);
 void remove_book_from_library(Library& lib);
 void find_book_in_library(Library& lib);
 void add_user_to_library(Library& lib);
+void remove_user_from_library(Library& lib);
 
 
 int main() {
@@ -55,8 +56,10 @@ int main() {
                 add_user_to_library(lib);
                 break;
             case 6:
+                remove_user_from_library(lib);
                 break;
             case 7:
+                find_user_in_library(lib);
                 break;
             case 8:
                 lib.show_users();
@@ -134,4 +137,18 @@ void add_user_to_library(Library& lib) {
     }
     lib.add_user(new_user);
     cout << "New user added!!\n";
+}
+
+void remove_user_from_library(Library& lib) {
+    string id;
+    cout << "put user id: ";
+    getline(cin, id);
+    lib.remove_user(id);
+}
+
+void find_user_in_library(Library& lib) {
+    string query;
+    cout << "put your query: ";
+    getline(cin, query);
+    lib.find_user(query);
 }
