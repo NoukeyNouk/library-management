@@ -13,6 +13,31 @@ void remove_book_from_library(Library& lib);
 void find_book_in_library(Library& lib);
 void add_user_to_library(Library& lib);
 void remove_user_from_library(Library& lib);
+void find_user_in_library(Library& lib);
+
+
+class Record {
+private:
+    int first_day;
+    int last_day;
+    string isbn;
+    string user_id;
+
+public:
+    Record(Book book, User user, int day_counter) {
+        first_day = day_counter;
+        last_day = first_day + user.get_max_days();
+        isbn = book.isbn;
+        user_id = user.get_id();
+    }
+
+    int overdued(int day_counter) {
+        if (last_day >= day_counter) {
+            return 0;
+        }
+        return 1;
+    }
+}
 
 
 int main() {

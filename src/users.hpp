@@ -11,7 +11,7 @@ private:
 
     string name;
     string type;
-    int id;
+    string id;
     int max_books;
     int max_days;
 
@@ -26,12 +26,24 @@ protected:
 public:
     User() = default;
 
-    string get_id() const {
-        return to_string(id);
+    const string& get_id() const {
+        return id;
     }
 
-    string get_name() const {
+    const string& get_name() const {
         return name;
+    }
+
+    const string& get_type() const {
+        return type;
+    }
+
+    int get_max_days() const {
+        return max_days;
+    }
+
+    int get_max_books() const {
+        return max_books;
     }
 
     friend ostream& operator << (ostream& out, const User& user);
