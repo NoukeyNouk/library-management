@@ -23,7 +23,7 @@ public:
 
 
 ostream& operator << (ostream& out, const Book& book) {
-    out << book.title;
+    out << book.title << ", " << book.author << ", " << book.genre;
     return out;
 }
 

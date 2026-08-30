@@ -1,165 +1,137 @@
 #include <iostream>
-#include <map>
 #include <string>
 
 #include "book.hpp"
 #include "users.hpp"
-
+#include "library.hpp"
 
 using namespace std;
 
 
-void user_loop();
+void add_book_to_library(Library& lib);
+void remove_book_from_library(Library& lib);
+void find_book_in_library(Library& lib);
+void add_user_to_library(Library& lib);
 
-
-class Library {
-private:
-    map<string, Book> books;
-    map<string, User> users;
-
-public:
-    void add_book(Book book) {
-        books[book.isbn] = book;
-    }
-
-    void add_user(User user) {
-        users[user.get_id()] = user;
-    }
-
-    void remove_book(const string& isbn) {
-        books.erase(isbn);
-    }
-
-    void remove_user(const string& id) {
-        users.erase(id);
-    }
-
-    void find_book_by_title(const string& query) {
-        int zero_flag = 1;
-        for (const auto& [isbn, book] : books) {
-            if (book.title.find(query) != string::npos) {
-                cout << isbn << ". " << book << "\n";
-                zero_flag = 0;
-            }
-        }
-        if (zero_flag) {
-            cout << "There's no any books with this title!\n";
-        }
-    }
-
-    void find_book_by_author(const string& query) {
-        int zero_flag = 1;
-        for (const auto& [isbn, book] : books) {
-            if (book.author.find(query) != string::npos) {
-                cout << isbn << ". " << book << "\n";
-                zero_flag = 0;
-            }
-        }
-        if (zero_flag) {
-            cout << "There's no any books with this author!\n";
-        }
-    }
-    
-    void find_book_by_genre(const string& query) {
-        int zero_flag = 1;
-        for (const auto& [isbn, book] : books) {
-            if (book.genre.find(query) != string::npos) {
-                cout << isbn << ". " << book << "\n";
-            }
-        }
-        if (zero_flag) {
-            cout << "There's no any books with this genre!\n";
-        }
-    }
-
-    void show_users() const {
-        cout << "\nLibrary users:\n";
-        for (const auto& [id, user] : users) {
-            cout << id << ". " << user << "\n";
-        }
-    }
-
-    void show_books() const {
-        cout << "\nBooks in library:\n";
-        for (const auto& [isbn, book] : books) {
-            cout << isbn << ". " << book << "\n";
-        }
-    }
-
-};
 
 int main() {
-    user_loop();
-}
-
-void user_loop() {
     int day_counter = 1;
     int end = 0;
-    string isbn, author, title, genre, query;
     Library lib = Library();
 
     while (end != 1) {
         int command = 0;
-        int find_option = 0;
-        cout << "\n=====  Library manager  =====\n";
+        cout << "\n========  Library manager  ========\n\n";
         cout << "Commands:\n";
-        cout << "1. quit\n";
-        cout << "2. add new book to library\n";
-        cout << "3. remove book from library\n";
-        cout << "4. find book in library\n";
-        cout << "5. select book and give it to library user\n";
+        cout << "0. quit\n";
+        cout << "1. add new book\n";
+        cout << "2. remove book from library\n";
+        cout << "3. find book\n";
+        cout << "4. show all books\n";
+        cout << "5. add new user\n";
+        cout << "6. remove user\n";
+        cout << "7. find user\n";
+        cout << "8. show all users\n";
+        // cout << "5. select book and give it to library user\n";
         cin >> command;
 
         switch (command) {
-            case 1:
+            case 0:
                 end = 1;
                 break;
+            case 1:
+                add_book_to_library(lib);
+                break;
             case 2:
-                getline(cin, query);
-                cout << "put ISBN: ";
-                getline(cin, isbn);
-                cout << "put author: ";
-                getline(cin, author);
-                cout << "put title: ";
-                getline(cin, title);
-                cout << "put genre: ";
-                getline(cin, genre);
-                lib.add_book(Book(isbn, author, title, genre));
+                remove_book_from_library(lib);
                 break;
             case 3:
-                cout << "put ISBN: ";
-                getline(cin, isbn);
-                lib.remove_book(isbn);
+                find_book_in_library(lib);
                 break;
             case 4:
-                cout << "find by (1: title, 2: author, 3: genre)\n";
-                cin >> find_option;
-                cout << "put your query: ";
-                getline(cin, query);
-                getline(cin, query);
-                switch (find_option) {
-                    default:
-                    case 1:
-                        lib.find_book_by_title(query);
-                        break;
-                    case 2:
-                        lib.find_book_by_author(query);
-                        break;
-                    case 3:
-                        lib.find_book_by_genre(query);
-                        break;
-                }
+                lib.show_books();
+                break;
+            case 5:
+                add_user_to_library(lib);
+                break;
+            case 6:
+                break;
+            case 7:
+                break;
+            case 8:
+                lib.show_users();
                 break;
         }
     }
 }
 
 
+void add_book_to_library(Library& lib) {
+    string query, isbn, author, title, genre;
+    getline(cin, query);
+    cout << "put ISBN: ";
+    getline(cin, isbn);
+    cout << "put author: ";
+    getline(cin, author);
+    cout << "put title: ";
+    getline(cin, title);
+    cout << "put genre: ";
+    getline(cin, genre);
+    lib.add_book(Book(isbn, author, title, genre));
+    cout << "New book added to library!!\n";
+}
 
+void remove_book_from_library(Library& lib) {
+    string isbn;
+    cout << "put ISBN: ";
+    getline(cin, isbn);
+    lib.remove_book(isbn);
+    cout << "Book was removed!!\n";
+}
 
+void find_book_in_library(Library& lib) {
+    int find_option = 0;
+    string query;
+    cout << "find by (1 or any: title, 2: author, 3: genre)\n";
+    cin >> find_option;
+    cout << "put your query: ";
+    getline(cin, query);
+    getline(cin, query);
+    switch (find_option) {
+        default:
+        case 1:
+            lib.find_book_by_title(query);
+            break;
+        case 2:
+            lib.find_book_by_author(query);
+            break;
+        case 3:
+            lib.find_book_by_genre(query);
+            break;
+    }
+}
 
-
-
-
-
-
+void add_user_to_library(Library& lib) {
+    int user_option = 0;
+    string name;
+    User new_user;
+    cout << "Select user type (1: student, 2: faculty, 3 or any: guest): ";
+    cin >> user_option;
+    cout << "put user's name: ";
+    getline(cin, name);
+    getline(cin, name);
+    switch (user_option) {
+        case 1:
+            new_user = Student(name);
+            break;
+        case 2:
+            new_user = Faculty(name);
+            break;
+        case 3:
+        default:
+            new_user = Guest(name);
+            break;
+    }
+    lib.add_user(new_user);
+    cout << "New user added!!\n";
+}
