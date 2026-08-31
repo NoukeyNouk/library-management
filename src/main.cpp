@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <list>
+#include <utility>
 
 #include "book.hpp"
 #include "users.hpp"
@@ -31,13 +33,59 @@ public:
         user_id = user.get_id();
     }
 
-    int overdued(int day_counter) {
+    bool overdued(int day_counter) {
         if (last_day >= day_counter) {
-            return 0;
+            return false;
         }
-        return 1;
+        return true;
     }
-}
+
+    pair<string, string> get_contact() const {
+        return {isbn, user_id};
+    }
+};
+
+
+class Recorder {
+private:
+    int day_counter;
+    list<Record> history;
+    list<Record> inactive;
+    map<string, bool> avaliable_books;
+    map<string, int> user_info;
+    
+public:
+    Recorder() {
+        day_counter = 0;
+    }
+
+    void new_day() {
+        day_counter++;
+    }
+
+    bool new_record(Book book, User user) {
+        if (!avaliable_books[book.isbn]) {
+            return false;
+        }
+
+        if (user_info[user.get_id()] >= user.get_max_books()) {
+            return false;
+        }
+
+        history.push_front(Record(book, user, day_counter));
+        return true;
+    }
+
+    list<pair<string, string>> check_overdue() const {
+        list<list<Record>::const_iterator> overdues;
+        for (auto i = history.cbegin(); i != history.cend(); ++i) {
+            if (i->overdued()) {
+                overdues.push_front(i);
+            }
+        }
+        return overdues;
+    }
+};
 
 
 int main() {
