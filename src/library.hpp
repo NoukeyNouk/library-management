@@ -6,6 +6,7 @@
 #include <iostream>
 #include "users.hpp"
 #include "book.hpp"
+#include "record.hpp"
 
 
 using namespace std;
@@ -15,6 +16,7 @@ class Library {
 private:
     map<string, Book> books;
     map<string, User> users;
+    Recorder recorder;
 
 public:
     void add_book(Book book) {
@@ -104,6 +106,8 @@ public:
             cout << isbn << ". " << book << "\n";
         }
     }
+
+
 
 };
 

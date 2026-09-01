@@ -33,7 +33,7 @@ public:
         user_id = user.get_id();
     }
 
-    bool overdued(int day_counter) {
+    bool overdued(int day_counter) const {
         if (last_day >= day_counter) {
             return false;
         }
@@ -63,27 +63,37 @@ public:
         day_counter++;
     }
 
-    bool new_record(Book book, User user) {
+    int new_record(Book book, User user) {
         if (!avaliable_books[book.isbn]) {
-            return false;
+            return 0;
         }
 
         if (user_info[user.get_id()] >= user.get_max_books()) {
-            return false;
+            return 1;
         }
 
         history.push_front(Record(book, user, day_counter));
-        return true;
+        return 2;
     }
 
-    list<pair<string, string>> check_overdue() const {
+    list<list<Record>::const_iterator> check_overdue() const {
         list<list<Record>::const_iterator> overdues;
         for (auto i = history.cbegin(); i != history.cend(); ++i) {
-            if (i->overdued()) {
+            if (i->overdued(day_counter)) {
                 overdues.push_front(i);
             }
         }
         return overdues;
+    }
+
+    bool close_record(pair<string, string> contact) {
+        for (auto i = history.begin(); i != history.end(); ++i) { 
+            if (i->get_contact() == contact) {
+                inactive.splice(inactive.begin(), history, i);
+                return true;
+            }
+        }
+        return false;
     }
 };
 
@@ -106,6 +116,8 @@ int main() {
         cout << "6. remove user\n";
         cout << "7. find user\n";
         cout << "8. show all users\n";
+        cout << "9. new record\n";
+        cout << "10. close record\n";
         // cout << "5. select book and give it to library user\n";
         cin >> command;
 
@@ -137,6 +149,13 @@ int main() {
             case 8:
                 lib.show_users();
                 break;
+            case 9:
+                string isbn, user_id;
+                cout << "put ISBN: ";
+                getline(cin, isbn);
+                cout << "put user id: ";
+                getline(cin, user_id);
+                lib.new_record(isbn, user_id);
         }
     }
 }
