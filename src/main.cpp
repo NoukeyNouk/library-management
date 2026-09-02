@@ -9,94 +9,15 @@
 
 using namespace std;
 
-
+int read_int();
 void add_book_to_library(Library& lib);
 void remove_book_from_library(Library& lib);
 void find_book_in_library(Library& lib);
 void add_user_to_library(Library& lib);
 void remove_user_from_library(Library& lib);
 void find_user_in_library(Library& lib);
-
-
-class Record {
-private:
-    int first_day;
-    int last_day;
-    string isbn;
-    string user_id;
-
-public:
-    Record(Book book, User user, int day_counter) {
-        first_day = day_counter;
-        last_day = first_day + user.get_max_days();
-        isbn = book.isbn;
-        user_id = user.get_id();
-    }
-
-    bool overdued(int day_counter) const {
-        if (last_day >= day_counter) {
-            return false;
-        }
-        return true;
-    }
-
-    pair<string, string> get_contact() const {
-        return {isbn, user_id};
-    }
-};
-
-
-class Recorder {
-private:
-    int day_counter;
-    list<Record> history;
-    list<Record> inactive;
-    map<string, bool> avaliable_books;
-    map<string, int> user_info;
-    
-public:
-    Recorder() {
-        day_counter = 0;
-    }
-
-    void new_day() {
-        day_counter++;
-    }
-
-    int new_record(Book book, User user) {
-        if (!avaliable_books[book.isbn]) {
-            return 0;
-        }
-
-        if (user_info[user.get_id()] >= user.get_max_books()) {
-            return 1;
-        }
-
-        history.push_front(Record(book, user, day_counter));
-        return 2;
-    }
-
-    list<list<Record>::const_iterator> check_overdue() const {
-        list<list<Record>::const_iterator> overdues;
-        for (auto i = history.cbegin(); i != history.cend(); ++i) {
-            if (i->overdued(day_counter)) {
-                overdues.push_front(i);
-            }
-        }
-        return overdues;
-    }
-
-    bool close_record(pair<string, string> contact) {
-        for (auto i = history.begin(); i != history.end(); ++i) { 
-            if (i->get_contact() == contact) {
-                inactive.splice(inactive.begin(), history, i);
-                return true;
-            }
-        }
-        return false;
-    }
-};
-
+void new_record_to_library(Library& lib);
+void close_record_from_library(Library& lib);
 
 int main() {
     int day_counter = 1;
@@ -104,7 +25,6 @@ int main() {
     Library lib = Library();
 
     while (end != 1) {
-        int command = 0;
         cout << "\n========  Library manager  ========\n\n";
         cout << "Commands:\n";
         cout << "0. quit\n";
@@ -118,8 +38,11 @@ int main() {
         cout << "8. show all users\n";
         cout << "9. new record\n";
         cout << "10. close record\n";
-        // cout << "5. select book and give it to library user\n";
-        cin >> command;
+        cout << "11. show history\n";
+        cout << "12. view overdue books\n";
+        cout << "13. advance to next day\n";
+
+        int command = read_int();
 
         switch (command) {
             case 0:
@@ -149,49 +72,96 @@ int main() {
             case 8:
                 lib.show_users();
                 break;
-            case 9:
-                string isbn, user_id;
-                cout << "put ISBN: ";
-                getline(cin, isbn);
-                cout << "put user id: ";
-                getline(cin, user_id);
-                lib.new_record(isbn, user_id);
+            case 9: {
+                new_record_to_library(lib);
+                break;
+            }
+            case 10: {
+                close_record_from_library(lib);
+                break;
+            }
+            case 11:
+                lib.show_history();
+                break;
+            case 12:
+                lib.show_overdue();
+                break;
+            case 13:
+                lib.next_day();
+                break;
         }
     }
 }
 
+int read_int() {
+    string line;
+    if (!getline(cin, line)) {
+        return 0;
+    }
+    try {
+        return stoi(line);
+    } catch (...) {
+        return 0;
+    }
+}
+
+string trim(const string& str) {
+    size_t first = str.find_first_not_of(" \t\n\r");
+    if (first == string::npos) return "";
+    size_t last = str.find_last_not_of(" \t\n\r");
+    return str.substr(first, (last - first + 1));
+}
 
 void add_book_to_library(Library& lib) {
-    string query, isbn, author, title, genre;
-    getline(cin, query);
+    string isbn, author, title, genre;
     cout << "put ISBN: ";
     getline(cin, isbn);
+    isbn = trim(isbn);
     cout << "put author: ";
     getline(cin, author);
+    author = trim(author);
     cout << "put title: ";
     getline(cin, title);
+    title = trim(title);
     cout << "put genre: ";
     getline(cin, genre);
-    lib.add_book(Book(isbn, author, title, genre));
-    cout << "New book added to library!!\n";
+    genre = trim(genre);
+    int res = lib.add_book(Book(isbn, author, title, genre));
+    if (res == 0) {
+        cout << "New book added to library!!\n";
+    } else if (res == 1) {
+        cout << "Error: Book with this ISBN already exists!\n";
+    } else if (res == 2) {
+        cout << "Error: ISBN and Title cannot be empty!\n";
+    }
 }
 
 void remove_book_from_library(Library& lib) {
     string isbn;
     cout << "put ISBN: ";
     getline(cin, isbn);
-    lib.remove_book(isbn);
-    cout << "Book was removed!!\n";
+    isbn = trim(isbn);
+    int res = lib.remove_book(isbn);
+    if (res == 0) {
+        cout << "book was removed!!\n";
+    } else if (res == 1) {
+        cout << "error: Book not found!!\n";
+    } else if (res == 2) {
+        cout << "error: Cannot remove book because it is currently borrowed!\n";
+    }
 }
 
 void find_book_in_library(Library& lib) {
-    int find_option = 0;
     string query;
-    cout << "find by (1 or any: title, 2: author, 3: genre)\n";
-    cin >> find_option;
+    cout << "find by (1 or any: title, 2: author, 3: genre, 4: ISBN)\n";
+    int find_option = read_int();
     cout << "put your query: ";
     getline(cin, query);
-    getline(cin, query);
+    query = trim(query);
+    if (query.empty()) {
+        cout << "search query cannot be empty!\n";
+        return;
+    }
     switch (find_option) {
         default:
         case 1:
@@ -203,18 +173,24 @@ void find_book_in_library(Library& lib) {
         case 3:
             lib.find_book_by_genre(query);
             break;
+        case 4:
+            lib.find_book_by_isbn(query);
+            break;
     }
 }
 
 void add_user_to_library(Library& lib) {
-    int user_option = 0;
     string name;
-    User new_user;
     cout << "Select user type (1: student, 2: faculty, 3 or any: guest): ";
-    cin >> user_option;
+    int user_option = read_int();
     cout << "put user's name: ";
     getline(cin, name);
-    getline(cin, name);
+    name = trim(name);
+    if (name.empty()) {
+        cout << "Error: User name cannot be empty!\n";
+        return;
+    }
+    User new_user;
     switch (user_option) {
         case 1:
             new_user = Student(name);
@@ -227,20 +203,75 @@ void add_user_to_library(Library& lib) {
             new_user = Guest(name);
             break;
     }
-    lib.add_user(new_user);
-    cout << "New user added!!\n";
+    int res = lib.add_user(new_user);
+    if (res == 0) {
+        cout << "New user added!!\n";
+    } else {
+        cout << "Error adding user!\n";
+    }
 }
 
 void remove_user_from_library(Library& lib) {
     string id;
     cout << "put user id: ";
     getline(cin, id);
-    lib.remove_user(id);
+    id = trim(id);
+    int res = lib.remove_user(id);
+    if (res == 0) {
+        cout << "User was removed!!\n";
+    } else if (res == 1) {
+        cout << "Error: User not found!\n";
+    } else if (res == 2) {
+        cout << "Error: Cannot remove user with active borrowed books!\n";
+    }
 }
 
 void find_user_in_library(Library& lib) {
     string query;
     cout << "put your query: ";
     getline(cin, query);
+    query = trim(query);
+    if (query.empty()) {
+        cout << "Search query cannot be empty!\n";
+        return;
+    }
     lib.find_user(query);
+}
+
+void new_record_to_library(Library& lib) {
+    string isbn, user_id;
+    cout << "put ISBN: ";
+    getline(cin, isbn);
+    isbn = trim(isbn);
+    cout << "put user id: ";
+    getline(cin, user_id);
+    user_id = trim(user_id);
+    int res = lib.new_record(isbn, user_id);
+    if (res == 2) {
+        cout << "Record created!!\n";
+    } else if (res == 0) {
+        cout << "Book is not available!\n";
+    } else if (res == 1) {
+        cout << "User limit reached!\n";
+    } else {
+        cout << "Book or user not found!\n";
+    }
+}
+
+void close_record_from_library(Library& lib) {
+    string isbn, user_id;
+    cout << "put ISBN: ";
+    getline(cin, isbn);
+    isbn = trim(isbn);
+    cout << "put user id: ";
+    getline(cin, user_id);
+    user_id = trim(user_id);
+    int res = lib.close_record(isbn, user_id);
+    if (res == 0) {
+        cout << "Record closed!!\n";
+    } else if (res == 1) {
+        cout << "Active record for this book and user not found!\n";
+    } else {
+        cout << "Book or user not found!\n";
+    }
 }

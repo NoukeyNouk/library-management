@@ -19,20 +19,48 @@ private:
     Recorder recorder;
 
 public:
-    void add_book(Book book) {
+    int add_book(Book book) {
+        if (book.isbn.empty() || book.title.empty()) {
+            return 2;
+        }
+        if (books.contains(book.isbn)) {
+            return 1;
+        }
         books[book.isbn] = book;
+        recorder.register_book(book.isbn);
+        return 0;
     }
 
-    void add_user(User user) {
+    int add_user(User user) {
+        if (user.get_name().empty()) {
+            return 1;
+        }
         users[user.get_id()] = user;
+        return 0;
     }
 
-    void remove_book(const string& isbn) {
+    int remove_book(const string& isbn) {
+        if (!books.contains(isbn)) {
+            return 1;
+        }
+        if (!recorder.is_book_available(isbn)) {
+            return 2;
+        }
         books.erase(isbn);
+        recorder.unregister_book(isbn);
+        return 0;
     }
 
-    void remove_user(const string& id) {
+    int remove_user(const string& id) {
+        if (!users.contains(id)) {
+            return 1;
+        }
+        if (recorder.user_has_active_records(id)) {
+            return 2;
+        }
         users.erase(id);
+        recorder.unregister_user(id);
+        return 0;
     }
 
     void find_book_by_title(const string& query) {
@@ -66,10 +94,24 @@ public:
         for (const auto& [isbn, book] : books) {
             if (book.genre.find(query) != string::npos) {
                 cout << isbn << ". " << book << "\n";
+                zero_flag = 0;
             }
         }
         if (zero_flag) {
             cout << "There's no any books with this genre!\n";
+        }
+    }
+
+    void find_book_by_isbn(const string& query) {
+        int zero_flag = 1;
+        for (const auto& [isbn, book] : books) {
+            if (isbn.find(query) != string::npos) {
+                cout << isbn << ". " << book << "\n";
+                zero_flag = 0;
+            }
+        }
+        if (zero_flag) {
+            cout << "There's no any books with this ISBN!\n";
         }
     }
 
@@ -78,6 +120,7 @@ public:
         for (const auto& [id, user] : users) {
             if (user.get_name().find(query) != string::npos) {
                 cout << id << ". " << user << "\n";
+                zero_flag = 0;
             }
         }
         if (zero_flag) {
@@ -107,7 +150,33 @@ public:
         }
     }
 
+    int new_record(const string& isbn, const string& user_id) {
+        if (!books.contains(isbn) || !users.contains(user_id)) {
+            return 3;
+        }
+        return recorder.new_record(books[isbn], users[user_id]);
+    }
 
+    int close_record(const string& isbn, const string& user_id) {
+        if (!books.contains(isbn) || !users.contains(user_id)) {
+            return 2;
+        }
+        bool res = recorder.close_record({isbn, user_id});
+        return res ? 0 : 1;
+    }
+
+    void show_history() const {
+        recorder.show_history();
+    }
+
+    void show_overdue() const {
+        recorder.show_overdue();
+    }
+
+    void next_day() {
+        recorder.new_day();
+        cout << "Advanced to next day.\n";
+    }
 
 };
 

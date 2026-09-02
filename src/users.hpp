@@ -18,13 +18,14 @@ private:
 protected:
     User(const string& _name, int _max_books, int _max_days, const string& _type):
         name(_name),
-        id(id_counter++), 
+        id(to_string(id_counter++)), 
         max_books(_max_books),
         max_days(_max_days),
         type(_type) {}
 
 public:
     User() = default;
+    virtual ~User() = default;
 
     const string& get_id() const {
         return id;
